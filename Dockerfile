@@ -1,15 +1,27 @@
-# 1. Use a lightweight Java 17 image (Change to 21 or 11 if your project uses a different version)
-FROM eclipse-temurin:17-jre-alpine
-
-# 2. Set the working directory inside the container
+# ==========================================
+# Stage 1: Build the application (Compile)
+# ==========================================
+FROM maven:3.9-eclipse-temurin-17 AS builder
 WORKDIR /app
 
-# 3. Copy the compiled Spring Boot jar file into the container
-# NOTE: If you use Gradle, change 'target/*.jar' to 'build/libs/*.jar'
-COPY target/*.jar app.jar
+# Copy your pom.xml and source code into the Docker environment
+COPY pom.xml .
+COPY src ./src
 
-# 4. Expose the port Spring Boot runs on (default is 8080)
+# Compile the Java code into a .jar file (skipping tests to speed up deployment)
+RUN mvn clean package -DskipTests
+
+# ==========================================
+# Stage 2: Run the application (Deploy)
+# ==========================================
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+
+# Copy ONLY the finished .jar file from the 'builder' stage above
+COPY --from=builder /app/target/*.jar app.jar
+
+# Expose the port
 EXPOSE 8080
 
-# 5. The command to run the application
+# Run the app
 ENTRYPOINT ["java", "-jar", "app.jar"]
