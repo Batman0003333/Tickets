@@ -1,0 +1,13 @@
+target/
+.git/
+.gitignore
+README.md
+HELP.md
+IMPLEMENTATION_GUIDE.md
+PROJECT_SUMMARY.md
+QUICKSTART.md
+mvnw
+mvnw.cmd
+.dockerignore
+Dockerfile
+docker-compose.yml
