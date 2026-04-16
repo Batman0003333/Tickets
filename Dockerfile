@@ -4,11 +4,11 @@
 FROM maven:3.9-eclipse-temurin-17 AS builder
 WORKDIR /app
 
-# Copy your pom.xml and source code into the Docker environment
-COPY pom.xml .
-COPY src ./src
+# Tell Docker to look inside the 'demo' folder on GitHub
+COPY demo/pom.xml .
+COPY demo/src ./src
 
-# Compile the Java code into a .jar file (skipping tests to speed up deployment)
+# Compile the Java code into a .jar file
 RUN mvn clean package -DskipTests
 
 # ==========================================
@@ -17,7 +17,7 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-# Copy ONLY the finished .jar file from the 'builder' stage above
+# Copy the compiled .jar file
 COPY --from=builder /app/target/*.jar app.jar
 
 # Expose the port
