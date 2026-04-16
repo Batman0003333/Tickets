@@ -1,0 +1,5 @@
+.sidebar { min-height: 100vh; background: #212529; color: white; }
+        .nav-link { color: rgba(255,255,255,0.7); border-radius: 8px; margin: 5px 15px; }
+        .nav-link:hover, .nav-link.active { background: rgba(13, 110, 253, 0.1); color: #0d6efd; }
+        .profile-header { background: linear-gradient(135deg, #0d6efd 0%, #003d99 100%); color: white; border-radius: 15px; }
+        .avatar-placeholder { width: 100px; height: 100px; background: rgba(255,255,255,0.2); border: 3px solid white; }

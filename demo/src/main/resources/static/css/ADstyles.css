@@ -1,0 +1,5 @@
+.sidebar { min-height: 100vh; background: #212529; color: white; }
+        .nav-link { color: rgba(255,255,255,0.7); transition: 0.3s; }
+        .nav-link:hover, .nav-link.active { color: white; background: rgba(255,255,255,0.1); }
+        .stat-card { border: none; border-radius: 15px; transition: transform 0.3s; }
+        .stat-card:hover { transform: translateY(-5px); }

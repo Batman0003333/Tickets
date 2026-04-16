@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link th:href="@{/css/ADstyles.css}" rel="stylesheet">
+    <style>
+        .stat-card { border-radius: 12px; transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-2px); }
+        .status-badge { font-size: 0.75rem; }
+
+        /* Toast */
+        .toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; }
+        .toast-success {
+            background: linear-gradient(135deg, #1a7a4a, #23a566);
+            border: none; border-radius: 14px; color: white;
+            min-width: 300px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        .toast-body { padding: 14px 16px; display: flex; align-items: center; gap: 10px; font-weight: 500; }
+        .toast-progress {
+            height: 3px; background: rgba(255,255,255,0.4);
+            border-radius: 0 0 14px 14px;
+            animation: shrink 3s linear forwards;
+        }
+        @keyframes shrink { from { width: 100%; } to { width: 0%; } }
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- Success toast -->
+    <div th:if="${success}" class="toast-container">
+        <div class="toast toast-success show" role="alert">
+            <div class="toast-body">
+                <span style="font-size:1.4rem">✅</span>
+                <div>
+                    <div class="fw-bold">Action Successful</div>
+                    <div class="small opacity-75" th:text="${success}"></div>
+                </div>
+            </div>
+            <div class="toast-progress"></div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div th:replace="~{layout/AdminSidebar :: AdminSidebarFragment}"></div>
+
+            <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h2 mb-0">System Overview</h1>
+                        <p class="text-muted small mb-0"
+                           th:text="${#temporals.format(#temporals.createNow(), 'EEEE, dd MMM yyyy')}">
+                            Monday, 23 Mar 2026
+                        </p>
+                    </div>
+                    <a th:href="@{/admin/all-tickets}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-ticket-perforated me-1"></i>All Tickets
+                    </a>
+                </div>
+
+                <!-- ── Stat cards ─────────────────────── -->
+                <div class="row g-4 mb-4">
+
+                    <div class="col-md-3">
+                        <div class="card stat-card bg-white shadow-sm p-3 border-start border-primary border-4">
+                            <div class="d-flex align-items-center">
+                                <div class="fs-1 text-primary me-3">
+                                    <i class="bi bi-collection"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-0">Total Tickets</h6>
+                                    <h2 class="fw-bold mb-0" th:text="${totalTickets}">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card stat-card bg-white shadow-sm p-3 border-start border-warning border-4">
+                            <div class="d-flex align-items-center">
+                                <div class="fs-1 text-warning me-3">
+                                    <i class="bi bi-hourglass-split"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-0">Open</h6>
+                                    <h2 class="fw-bold mb-0" th:text="${openTickets}">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card stat-card bg-white shadow-sm p-3 border-start border-info border-4">
+                            <div class="d-flex align-items-center">
+                                <div class="fs-1 text-info me-3">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-0">In Progress</h6>
+                                    <h2 class="fw-bold mb-0" th:text="${inProgress}">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card stat-card bg-white shadow-sm p-3 border-start border-success border-4">
+                            <div class="d-flex align-items-center">
+                                <div class="fs-1 text-success me-3">
+                                    <i class="bi bi-check-circle"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-0">Resolved</h6>
+                                    <h2 class="fw-bold mb-0" th:text="${resolvedTickets}">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Second row stats -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="card stat-card bg-white shadow-sm p-3 border-start border-secondary border-4">
+                            <div class="d-flex align-items-center">
+                                <div class="fs-1 text-secondary me-3">
+                                    <i class="bi bi-person-check"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-0">Active Users</h6>
+                                    <h2 class="fw-bold mb-0" th:text="${activeUsers}">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Recent tickets table ───────────── -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-clock-history me-2 text-muted"></i>Recent Tickets
+                        </h5>
+                        <a th:href="@{/admin/all-tickets}" class="btn btn-sm btn-outline-primary">
+                            View All
+                        </a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Ticket No.</th>
+                                    <th>Subject</th>
+                                    <th>Category</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th class="pe-3">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                <!-- Empty state -->
+                                <tr th:if="${recentTickets == null or #lists.isEmpty(recentTickets)}">
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                                        No tickets yet
+                                    </td>
+                                </tr>
+
+                                <tr th:each="ticket : ${recentTickets}">
+                                    <td class="ps-3">
+                                        <span class="fw-bold text-primary font-monospace small"
+                                              th:text="${ticket.ticketNumber}">TKT-2026-000001</span>
+                                    </td>
+                                    <td th:text="${ticket.title}">Title</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border"
+                                              th:text="${ticket.category != null ? ticket.category : '--'}">
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge status-badge"
+                                              th:classappend="${ticket.priority != null and ticket.priority.name() == 'CRITICAL' ? 'bg-danger'          :
+                                                               ticket.priority != null and ticket.priority.name() == 'HIGH'     ? 'bg-warning text-dark':
+                                                               ticket.priority != null and ticket.priority.name() == 'MEDIUM'   ? 'bg-info text-dark'   :
+                                                               'bg-light text-dark'}"
+                                              th:text="${ticket.priority != null ? ticket.priority : '--'}">
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge status-badge"
+                                              th:classappend="${ticket.status.name() == 'OPEN'        ? 'bg-warning text-dark' :
+                                                               ticket.status.name() == 'IN_PROGRESS'  ? 'bg-primary'          :
+                                                               ticket.status.name() == 'RESOLVED'     ? 'bg-success'          :
+                                                               ticket.status.name() == 'REJECTED'     ? 'bg-danger'           :
+                                                               'bg-secondary'}"
+                                              th:text="${ticket.status}">
+                                        </span>
+                                    </td>
+                                    <td class="text-muted small"
+                                        th:text="${ticket.createdAtStr != null ? ticket.createdAtStr : '--'}">
+                                    </td>
+                                    <td class="pe-3">
+                                        <a th:href="@{/admin/ticket/{id}(id=${ticket.id})}"
+                                           class="btn btn-sm btn-dark">
+                                            <i class="bi bi-gear me-1"></i>Manage
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        setTimeout(() => {
+            document.querySelectorAll('.toast').forEach(t => {
+                t.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                t.style.opacity = '0';
+                t.style.transform = 'translateY(20px)';
+                setTimeout(() => t.remove(), 500);
+            });
+        }, 3000);
+    </script>
+</body>
+</html>

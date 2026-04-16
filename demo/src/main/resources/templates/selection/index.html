@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - Ticket Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body, html { height: 100%; margin: 0; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        .wrapper { display: flex; height: 100vh; }
+        
+        .role-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s ease;
+            text-decoration: none;
+            color: white !important; /* Ensure text stays white */
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* User Side - Blue/Purple */
+        .user-side { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        /* Admin Side - Dark/Indigo */
+        .admin-side { background: linear-gradient(135deg, #232526 0%, #414345 100%); border-left: 1px solid rgba(255,255,255,0.1); }
+
+        .role-section:hover { flex: 1.2; filter: brightness(1.1); z-index: 2; }
+        
+        .icon-circle {
+            width: 120px; height: 120px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 20px; font-size: 3.5rem;
+        }
+
+        .role-section h2 { font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; }
+        .role-section p { opacity: 0.8; max-width: 320px; font-size: 1.1rem; line-height: 1.5; }
+        
+        .btn-custom { 
+            border: 2px solid white; 
+            border-radius: 30px; 
+            padding: 12px 40px; 
+            font-weight: 700; 
+            margin-top: 25px; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: transparent;
+            color: white;
+            transition: 0.3s;
+        }
+        
+        .role-section:hover .btn-custom { background: white; color: #333; }
+
+        @media (max-width: 768px) { 
+            .wrapper { flex-direction: column; } 
+            .role-section:hover { flex: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <a th:href="@{/login}" class="role-section user-side">
+            <div class="icon-circle">👤</div>
+            <h2>User Portal</h2>
+            <p>Raise support tickets, track active issues, and communicate with our help desk staff.</p>
+            <div class="btn-custom">Client Login</div>
+        </a>
+
+        <a th:href="@{/admin/login}" class="role-section admin-side">
+            <div class="icon-circle">🛡️</div>
+            <h2>Admin Portal</h2>
+            <p>Manage departmental workflows, assign staff to tickets, and view system-wide analytics.</p>
+            <div class="btn-custom">Staff Login</div>
+        </a>
+    </div>
+</body>
+</html>

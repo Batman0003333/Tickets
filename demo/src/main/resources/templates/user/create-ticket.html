@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Ticket - Ticket Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        .section-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #6c757d;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .card { border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .form-label { font-weight: 500; font-size: 0.9rem; }
+        .required-star { color: #dc3545; }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9999;
+        }
+        .toast-success {
+            background: linear-gradient(135deg, #1a7a4a, #23a566);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            min-width: 320px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        .toast-error {
+            background: linear-gradient(135deg, #8b1a1a, #c0392b);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            min-width: 320px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        .toast-body {
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+        .toast-icon { font-size: 1.4rem; }
+        .toast-progress {
+            height: 3px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 0 0 14px 14px;
+            animation: shrink 4s linear forwards;
+        }
+        @keyframes shrink { from { width: 100%; } to { width: 0%; } }
+
+        /* Sub-category dynamic field */
+        #subCategoryGroup { transition: opacity 0.3s ease; }
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- Success toast -->
+    <div th:if="${success}" class="toast-container">
+        <div class="toast toast-success show" role="alert">
+            <div class="toast-body">
+                <span class="toast-icon">🎫</span>
+                <div>
+                    <div class="fw-bold">Ticket Created!</div>
+                    <div class="small opacity-75" th:text="${success}"></div>
+                </div>
+            </div>
+            <div class="toast-progress"></div>
+        </div>
+    </div>
+
+    <!-- Error toast -->
+    <div th:if="${error}" class="toast-container">
+        <div class="toast toast-error show" role="alert">
+            <div class="toast-body">
+                <span class="toast-icon">❌</span>
+                <div>
+                    <div class="fw-bold">Failed to Create Ticket</div>
+                    <div class="small opacity-75" th:text="${error}"></div>
+                </div>
+            </div>
+            <div class="toast-progress"></div>
+        </div>
+    </div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{layout/sidebar :: sidebarFragment}"></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between align-items-center py-4">
+                <h2 class="mb-0">Create New Ticket</h2>
+                <a th:href="@{/user/my-tickets}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i>Back to My Tickets
+                </a>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body p-4">
+                    <form th:action="@{/user/create-ticket}" th:object="${ticketDTO}" method="post">
+
+                        <!-- ── Basic info ─────────────────────── -->
+                        <p class="section-title">Basic information</p>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Title <span class="required-star">*</span>
+                            </label>
+                            <input type="text" class="form-control" th:field="*{title}"
+                                   placeholder="Brief one-line summary of the issue" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Description <span class="required-star">*</span>
+                            </label>
+                            <textarea class="form-control" th:field="*{description}"
+                                      rows="4" placeholder="Describe the issue in detail" required></textarea>
+                        </div>
+
+                        <!-- ── Category & Priority ────────────── -->
+                        <p class="section-title mt-4">Category &amp; priority</p>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">
+                                    Category <span class="required-star">*</span>
+                                </label>
+                                <select class="form-select" th:field="*{category}"
+                                        id="categorySelect" required>
+                                    <option value="">Select Category</option>
+                                    <option value="Hardware">Hardware</option>
+                                    <option value="Software">Software</option>
+                                    <option value="Network">Network</option>
+                                    <option value="Access &amp; Security">Access &amp; Security</option>
+                                    <option value="Email &amp; Communication">Email &amp; Communication</option>
+                                    <option value="Data &amp; Storage">Data &amp; Storage</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 mb-3" id="subCategoryGroup">
+                                <label class="form-label">Sub-category</label>
+                                <select class="form-select" th:field="*{subCategory}" id="subCategorySelect">
+                                    <option value="">Select Category first</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">
+                                    Priority <span class="required-star">*</span>
+                                </label>
+                                <select class="form-select" th:field="*{priority}" required>
+                                    <option value="">Select Priority</option>
+                                    <option value="LOW">🟢 Low</option>
+                                    <option value="MEDIUM">🟡 Medium</option>
+                                    <option value="HIGH">🟠 High</option>
+                                    <option value="CRITICAL">🔴 Critical</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- ── Department ─────────────────────── -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Department</label>
+                                <select class="form-select" th:field="*{departmentId}">
+                                    <option value="">Auto-assign from my department</option>
+                                    <option th:each="dept : ${departments}"
+                                            th:value="${dept.id}"
+                                            th:text="${dept.name}">Department</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Reference ID</label>
+                                <input type="text" class="form-control" th:field="*{referenceId}"
+                                       placeholder="Order ID, invoice number, etc.">
+                            </div>
+                        </div>
+
+                        <!-- ── Context ─────────────────────────── -->
+                        <p class="section-title mt-4">Additional context <span class="text-muted fw-normal">(optional)</span></p>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Affected Asset / Device</label>
+                                <input type="text" class="form-control" th:field="*{affectedAsset}"
+                                       placeholder="e.g. Laptop, Printer, Software name">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Affected URL / Page</label>
+                                <input type="text" class="form-control" th:field="*{affectedUrl}"
+                                       placeholder="https://...">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Steps to Reproduce</label>
+                            <textarea class="form-control" th:field="*{stepsToReproduce}"
+                                      rows="3" placeholder="1. Go to...&#10;2. Click on...&#10;3. See error"></textarea>
+                        </div>
+
+                        <!-- ── Submit ──────────────────────────── -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-send me-1"></i>Submit Ticket
+                            </button>
+                            <a th:href="@{/user/my-tickets}" class="btn btn-outline-secondary px-4">
+                                Cancel
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Auto-dismiss toasts
+    setTimeout(() => {
+        document.querySelectorAll('.toast').forEach(t => {
+            t.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            t.style.opacity = '0';
+            t.style.transform = 'translateY(20px)';
+            setTimeout(() => t.remove(), 500);
+        });
+    }, 4000);
+
+    // Dynamic sub-category based on category selection
+    const subCategories = {
+        'Hardware':              ['Laptop', 'Desktop', 'Printer', 'Phone', 'Peripheral', 'Other'],
+        'Software':              ['Installation', 'License', 'Crash / Bug', 'Update', 'Other'],
+        'Network':               ['VPN', 'Wi-Fi', 'Firewall', 'Slow connection', 'Other'],
+        'Access & Security':     ['Password reset', 'New user onboarding', 'Permission request', 'MFA', 'Other'],
+        'Email & Communication': ['Outlook', 'Teams', 'Zoom', 'Distribution lists', 'Other'],
+        'Data & Storage':        ['File recovery', 'Drive access', 'Backup', 'Other'],
+        'Other':                 ['General enquiry']
+    };
+
+    const categorySelect    = document.getElementById('categorySelect');
+    const subCategorySelect = document.getElementById('subCategorySelect');
+
+    categorySelect.addEventListener('change', function () {
+        const selected = this.value;
+        subCategorySelect.innerHTML = '<option value="">Select sub-category</option>';
+
+        if (selected && subCategories[selected]) {
+            subCategories[selected].forEach(sub => {
+                const opt = document.createElement('option');
+                opt.value = sub;
+                opt.textContent = sub;
+                subCategorySelect.appendChild(opt);
+            });
+        }
+    });
+</script>
+</body>
+</html>

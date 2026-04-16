@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - Ticket Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="/css/style.css" rel="stylesheet">
+
+    
+       
+       
+</head>
+<body class="bg-light">
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{layout/sidebar :: sidebarFragment}"></div>
+     
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Dashboard</h1>
+                <span>Welcome, User!</span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Tickets</h5>
+                            <p class="card-text display-4" th:text="${totalCount}">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Open Tickets</h5>
+                            <p class="card-text display-4" th:text="${openCount}">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Resolved</h5>
+                            <p class="card-text display-4" th:text="${resolvedCount}">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <h3>Recent Tickets</h3>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Ticket #</th>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Created</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="ticket : ${tickets.content}">
+                                <td th:text="${ticket.ticketNumber}">#TKT-001</td>
+                                <td th:text="${ticket.title}">Title</td>
+                                <td>
+                                    <span th:text="${ticket.status}" th:classappend="' badge bg-' + ${ticket.status == 'OPEN' ? 'warning' : ticket.status == 'IN_PROGRESS' ? 'info' : ticket.status == 'RESOLVED' ? 'success' : 'secondary'}">OPEN</span>
+                                </td>
+                                <td>
+                                    <span th:text="${ticket.priority}" th:classappend="' badge bg-' + ${ticket.priority == 'HIGH' ? 'danger' : ticket.priority == 'CRITICAL' ? 'danger' : ticket.priority == 'MEDIUM' ? 'warning' : 'info'}">HIGH</span>
+                                </td>
+                                <td th:text="${ticket.createdAtStr}">2025-01-15 10:00:00</td>
+                                <td>
+                                    <a th:href="@{'/user/ticket/' + ${ticket.id}}" class="btn btn-sm btn-primary">View</a>
+                                </td>
+                            </tr>
+                    </tbody>
+                </table>
+                <div class="mt-3">
+                        <nav th:if="${tickets.totalPages} > 1">
+                            <ul class="pagination">
+                                <li class="page-item" th:classappend="${tickets.first}? 'disabled'">
+                                    <a class="page-link" th:href="@{'/user/dashboard'(page=${tickets.number-1},size=${tickets.size})}">Previous</a>
+                                </li>
+                                <li class="page-item" th:each="i : ${#numbers.sequence(0, tickets.totalPages-1)}" th:classappend="${i==tickets.number}? 'active'">
+                                    <a class="page-link" th:href="@{'/user/dashboard'(page=${i},size=${tickets.size})}" th:text="${i+1}">1</a>
+                                </li>
+                                <li class="page-item" th:classappend="${tickets.last}? 'disabled'">
+                                    <a class="page-link" th:href="@{'/user/dashboard'(page=${tickets.number+1},size=${tickets.size})}">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

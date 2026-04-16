@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Ticket - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link th:href="@{/css/ADstyles.css}" rel="stylesheet">
+    <style>
+        .info-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+                      letter-spacing: 0.06em; color: #6c757d; margin-bottom: 2px; }
+        .info-value { font-weight: 500; margin-bottom: 0; }
+        .section-divider { border-top: 1px solid #e9ecef; margin: 20px 0; }
+        .comment-card { border-left: 3px solid #dee2e6; padding-left: 12px; }
+        .comment-card.internal { border-left-color: #ffc107; background: #fffdf0;
+                                  border-radius: 0 8px 8px 0; padding: 10px 12px; }
+        .timeline-dot { width: 10px; height: 10px; border-radius: 50%;
+                        background: #dee2e6; margin-top: 5px; flex-shrink: 0; }
+
+        .toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; }
+        .toast-success {
+            background: linear-gradient(135deg, #1a7a4a, #23a566);
+            border: none; border-radius: 14px; color: white;
+            min-width: 300px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        .toast-error {
+            background: linear-gradient(135deg, #8b1a1a, #c0392b);
+            border: none; border-radius: 14px; color: white;
+            min-width: 300px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        .toast-body { padding: 14px 16px; display: flex; align-items: center; gap: 10px; font-weight: 500; }
+        .toast-progress { height: 3px; background: rgba(255,255,255,0.4);
+                          border-radius: 0 0 14px 14px; animation: shrink 3s linear forwards; }
+        @keyframes shrink { from { width: 100%; } to { width: 0%; } }
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- Success toast -->
+    <div th:if="${success}" class="toast-container">
+        <div class="toast toast-success show" role="alert">
+            <div class="toast-body">
+                <span style="font-size:1.4rem">✅</span>
+                <div>
+                    <div class="fw-bold">Action Successful</div>
+                    <div class="small opacity-75" th:text="${success}"></div>
+                </div>
+            </div>
+            <div class="toast-progress"></div>
+        </div>
+    </div>
+
+    <!-- Error toast -->
+    <div th:if="${error}" class="toast-container">
+        <div class="toast toast-error show" role="alert">
+            <div class="toast-body">
+                <span style="font-size:1.4rem">❌</span>
+                <div>
+                    <div class="fw-bold">Action Failed</div>
+                    <div class="small opacity-75" th:text="${error}"></div>
+                </div>
+            </div>
+            <div class="toast-progress"></div>
+        </div>
+    </div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{layout/AdminSidebar :: AdminSidebarFragment}"></div>
+
+        <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-0">
+                        Manage Ticket
+                        <span class="text-primary font-monospace fs-5 ms-2"
+                              th:text="${ticket.ticketNumber}">TKT-2026-000001</span>
+                    </h2>
+                    <p class="text-muted small mb-0"
+                       th:text="'Submitted ' + ${ticket.createdAtStr}">Submitted date</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <span class="badge fs-6 px-3 py-2"
+                          th:classappend="${ticket.status.name() == 'OPEN'        ? 'bg-warning text-dark' :
+                                           ticket.status.name() == 'IN_PROGRESS'  ? 'bg-primary'          :
+                                           ticket.status.name() == 'RESOLVED'     ? 'bg-success'          :
+                                           ticket.status.name() == 'REJECTED'     ? 'bg-danger'           :
+                                           'bg-secondary'}"
+                          th:text="${ticket.status}">STATUS</span>
+                    <a th:href="@{/admin/all-tickets}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left me-1"></i>Back
+                    </a>
+                </div>
+            </div>
+
+            <div class="row g-4">
+
+                <!-- Left column — ticket info + process form -->
+                <div class="col-md-8">
+
+                    <!-- Ticket details card -->
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-white fw-bold py-3">
+                            <i class="bi bi-ticket-perforated me-2 text-muted"></i>Ticket Details
+                        </div>
+                        <div class="card-body">
+
+                            <h5 th:text="${ticket.title}" class="mb-1">Ticket Title</h5>
+                            <p th:text="${ticket.description}" class="text-muted mb-3">Description</p>
+
+                            <div class="section-divider"></div>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <p class="info-label">Category</p>
+                                    <p class="info-value"
+                                       th:text="${ticket.category != null ? ticket.category : '--'}"></p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="info-label">Sub-category</p>
+                                    <p class="info-value"
+                                       th:text="${ticket.subCategory != null ? ticket.subCategory : '--'}"></p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="info-label">Priority</p>
+                                    <span class="badge"
+                                          th:classappend="${ticket.priority != null and ticket.priority.name() == 'CRITICAL' ? 'bg-danger'           :
+                                                           ticket.priority != null and ticket.priority.name() == 'HIGH'     ? 'bg-warning text-dark' :
+                                                           ticket.priority != null and ticket.priority.name() == 'MEDIUM'   ? 'bg-info text-dark'    :
+                                                           'bg-light text-dark'}"
+                                          th:text="${ticket.priority != null ? ticket.priority : '--'}">
+                                    </span>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="info-label">Department</p>
+                                    <p class="info-value"
+                                       th:text="${ticket.departmentName != null ? ticket.departmentName : '--'}"></p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="info-label">Submitted by</p>
+                                    <p class="info-value"
+                                       th:text="${ticket.createdByName != null ? ticket.createdByName : '--'}"></p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="info-label">Assigned to</p>
+                                    <p class="info-value"
+                                       th:text="${ticket.assignedToName != null ? ticket.assignedToName : 'Unassigned'}"></p>
+                                </div>
+                            </div>
+
+                            <!-- Optional fields — only show if filled -->
+                            <div th:if="${ticket.affectedAsset != null or ticket.affectedUrl != null
+                                          or ticket.stepsToReproduce != null or ticket.referenceId != null}">
+                                <div class="section-divider"></div>
+                                <div class="row g-3">
+                                    <div class="col-md-6" th:if="${ticket.affectedAsset != null}">
+                                        <p class="info-label">Affected asset</p>
+                                        <p class="info-value" th:text="${ticket.affectedAsset}"></p>
+                                    </div>
+                                    <div class="col-md-6" th:if="${ticket.affectedUrl != null}">
+                                        <p class="info-label">Affected URL</p>
+                                        <p class="info-value">
+                                            <a th:href="${ticket.affectedUrl}"
+                                               th:text="${ticket.affectedUrl}"
+                                               target="_blank" class="text-break"></a>
+                                        </p>
+                                    </div>
+                                    <div class="col-12" th:if="${ticket.stepsToReproduce != null}">
+                                        <p class="info-label">Steps to reproduce</p>
+                                        <pre class="bg-light p-2 rounded small"
+                                             th:text="${ticket.stepsToReproduce}"></pre>
+                                    </div>
+                                    <div class="col-md-6" th:if="${ticket.referenceId != null}">
+                                        <p class="info-label">Reference ID</p>
+                                        <p class="info-value" th:text="${ticket.referenceId}"></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SLA info -->
+                            <div class="section-divider"></div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <p class="info-label">SLA response due</p>
+                                    <p class="info-value small"
+                                       th:text="${ticket.slaResponseDueAtStr != null ? ticket.slaResponseDueAtStr : '--'}"></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="info-label">SLA resolve due</p>
+                                    <p class="info-value small"
+                                       th:text="${ticket.slaResolveDueAtStr != null ? ticket.slaResolveDueAtStr : '--'}"></p>
+                                </div>
+                                <div class="col-md-6" th:if="${ticket.resolvedAtStr != null}">
+                                    <p class="info-label">Resolved at</p>
+                                    <p class="info-value small" th:text="${ticket.resolvedAtStr}"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Process form card -->
+                    <div class="card shadow-sm border-0 mb-4"
+                         th:if="${ticket.status.name() != 'RESOLVED' and
+                                  ticket.status.name() != 'CLOSED'   and
+                                  ticket.status.name() != 'REJECTED'}">
+                        <div class="card-header bg-white fw-bold py-3">
+                            <i class="bi bi-check2-square me-2 text-muted"></i>Take Action
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/admin/ticket/process}" method="post">
+                                <input type="hidden" name="ticketId" th:value="${ticket.id}">
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-500">Decision</label>
+                                        <select name="action" class="form-select"
+                                                id="actionSelect" onchange="handleActionChange()">
+                                            <option value="APPROVE">✅ Resolve ticket</option>
+                                            <option value="REJECT">❌ Reject ticket</option>
+                                            <option value="ESCALATE">⬆️ Escalate / reassign</option>
+                                            <option value="CLOSE">🔒 Close ticket</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3" id="escalationSection">
+                                        <label class="form-label fw-500">Assign to agent</label>
+                                        <select name="nextAuthorityId" class="form-select">
+                                            <option value="">Select agent...</option>
+                                            <option th:each="agent : ${allAgents}"
+                                                    th:value="${agent.id}"
+                                                    th:text="${agent.firstName + ' ' + agent.lastName}">
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-500">Comments / notes</label>
+                                    <textarea name="comments" class="form-control" rows="3"
+                                              placeholder="Reason for decision or notes for the assignee..."></textarea>
+                                    <div class="form-text">Public comments are visible to the ticket submitter.</div>
+                                </div>
+
+                                <button type="submit" class="btn btn-dark px-4">
+                                    <i class="bi bi-send me-1"></i>Submit Decision
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Already resolved/closed/rejected banner -->
+                    <div class="alert alert-secondary d-flex align-items-center gap-2"
+                         th:if="${ticket.status.name() == 'RESOLVED' or
+                                  ticket.status.name() == 'CLOSED'   or
+                                  ticket.status.name() == 'REJECTED'}">
+                        <i class="bi bi-lock fs-5"></i>
+                        <span>This ticket is <strong th:text="${ticket.status}"></strong> and cannot be processed further.</span>
+                    </div>
+
+                </div>
+
+                <!-- Right column — comments -->
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-white fw-bold py-3 d-flex justify-content-between">
+                            <span><i class="bi bi-chat-left-text me-2 text-muted"></i>Activity</span>
+                            <span class="badge bg-secondary"
+                                  th:text="${comments != null ? #lists.size(comments) : 0}">0</span>
+                        </div>
+                        <div class="card-body" style="max-height:500px;overflow-y:auto">
+
+                            <!-- Empty state -->
+                            <div th:if="${comments == null or #lists.isEmpty(comments)}"
+                                 class="text-center text-muted py-4 small">
+                                <i class="bi bi-chat-left d-block fs-3 mb-2"></i>
+                                No comments yet
+                            </div>
+
+                            <div th:each="comment : ${comments}"
+                                 class="d-flex gap-2 mb-3">
+                                <div class="timeline-dot mt-1"></div>
+                                <div class="w-100">
+                                    <div class="comment-card"
+                                         th:classappend="${comment.isInternal ? 'internal' : ''}">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="fw-500 small"
+                                                  th:text="${comment.createdByName}">Name</span>
+                                            <span class="badge bg-warning text-dark"
+                                                  style="font-size:0.65rem"
+                                                  th:if="${comment.isInternal}">Internal</span>
+                                        </div>
+                                        <p class="mb-1 small" th:text="${comment.content}">Comment</p>
+                                        <p class="text-muted mb-0"
+                                           style="font-size:0.7rem"
+                                           th:text="${comment.createdAt}">Date</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function handleActionChange() {
+        const action = document.getElementById('actionSelect').value;
+        const escSection = document.getElementById('escalationSection');
+        if (action === 'ESCALATE') {
+            escSection.style.opacity = '1';
+            escSection.style.pointerEvents = 'auto';
+        } else {
+            escSection.style.opacity = '0.4';
+            escSection.style.pointerEvents = 'none';
+        }
+    }
+    window.addEventListener('load', handleActionChange);
+
+    // Auto-dismiss toasts
+    setTimeout(() => {
+        document.querySelectorAll('.toast').forEach(t => {
+            t.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            t.style.opacity = '0';
+            t.style.transform = 'translateY(20px)';
+            setTimeout(() => t.remove(), 500);
+        });
+    }, 3000);
+</script>
+</body>
+</html>

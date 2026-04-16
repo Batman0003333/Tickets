@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Ticket System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        * { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    background: linear-gradient(135deg, #232526 0%, #414345 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-attachment: fixed;
+}
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            color: white;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 10px;
+            padding: 12px 15px;
+        }
+        .form-control::placeholder { color: rgba(255,255,255,0.4); }
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .btn-admin {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+            transition: opacity 0.2s;
+        }
+        .btn-admin:hover { opacity: 0.9; }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9999;
+        }
+        .toast-success {
+            background: linear-gradient(135deg, #1a7a4a, #23a566);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            min-width: 320px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        .toast-error {
+            background: linear-gradient(135deg, #8b1a1a, #c0392b);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            min-width: 320px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        .toast-warning {
+            background: linear-gradient(135deg, #7a5a00, #c49a00);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            min-width: 320px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        .toast-body {
+            font-size: 0.95rem;
+            font-weight: 500;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .toast-icon { font-size: 1.4rem; }
+        .toast-progress {
+            height: 3px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 0 0 14px 14px;
+            animation: shrink 3s linear forwards;
+        }
+        @keyframes shrink {
+            from { width: 100%; }
+            to   { width: 0%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Success Toast — shown after successful registration redirect -->
+    <div th:if="${param.success}" class="toast-container">
+        <div class="toast toast-success show" role="alert">
+            <div class="toast-body">
+                <span class="toast-icon">🎉</span>
+                <div>
+                    <div class="fw-bold">Admin Registered Successfully!</div>
+                    <div class="small opacity-75">Please log in with your new credentials.</div>
+                </div>
+            </div>
+            <div class="toast-progress"></div>
+        </div>
+    </div>
+
+    <!-- Error Toast — shown on wrong credentials -->
+    <div th:if="${param.error != null and param.success == null}" class="toast-container">
+        <div class="toast toast-error show" role="alert">
+            <div class="toast-body">
+                <span class="toast-icon">🔐</span>
+                <div>
+                    <div class="fw-bold">Login Failed</div>
+                    <div class="small opacity-75">Invalid email or password.</div>
+                </div>
+            </div>
+            <div class="toast-progress"></div>
+        </div>
+    </div>
+
+    <div class="login-card">
+        <div class="text-center mb-4">
+            <div style="font-size: 3rem; margin-bottom: 10px;">🛡️</div>
+            <h2 class="fw-bold">Admin Login</h2>
+            <p class="text-white-50 mb-0">System Management Portal</p>
+        </div>
+
+        <form th:action="@{/login}" method="post">
+            <div class="mb-3">
+                <label class="form-label small text-white-50">Admin Email</label>
+                <input type="email" name="email" class="form-control"
+                       placeholder="admin@company.com" required autofocus>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small text-white-50">Password</label>
+                <input type="password" name="password" class="form-control"
+                       placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 btn-admin">
+                Secure Login
+            </button>
+        </form>
+
+        <div class="text-center mt-4">
+            <p class="small text-white-50 mb-2">
+                New Administrator?
+                <a th:href="@{/admin/registerAdmin}"
+                   class="text-white text-decoration-none fw-bold">Request Access</a>
+            </p>
+            <a th:href="@{/}" class="text-white-50 text-decoration-none small">
+                ← Back to Portal Selection
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        setTimeout(() => {
+            document.querySelectorAll('.toast').forEach(t => {
+                t.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                t.style.opacity = '0';
+                t.style.transform = 'translateY(20px)';
+                setTimeout(() => t.remove(), 500);
+            });
+        }, 3000);
+    </script>
+</body>
+</html>

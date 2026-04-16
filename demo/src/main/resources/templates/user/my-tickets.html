@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Tickets - Ticket Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        .progress { height: 5px; border-radius: 3px; }
+        .ticket-number { font-family: monospace; font-weight: 600; font-size: 0.85rem; }
+        .priority-badge { font-size: 0.75rem; }
+    </style>
+</head>
+<body class="bg-light">
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{layout/sidebar :: sidebarFragment}"></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+
+            <div class="d-flex justify-content-between align-items-center py-4">
+                <h2 class="mb-0">My Tickets</h2>
+                <a th:href="@{/user/create-ticket}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i>New Ticket
+                </a>
+            </div>
+
+            <!-- Success / error flash messages -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-1"></i>
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-circle me-1"></i>
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Ticket No.</th>
+                                <th>Title</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                                <th>Created</th>
+                                <th>Updated</th>
+                                <th class="pe-3">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <!-- Empty state -->
+                            <tr th:if="${tickets == null or tickets.totalElements == 0}">
+                                <td colspan="7" class="text-center text-muted py-5">
+                                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                                    No tickets yet.
+                                    <a th:href="@{/user/create-ticket}">Create your first ticket?</a>
+                                </td>
+                            </tr>
+
+                            <tr th:each="ticket : ${tickets.content}">
+
+                                <!-- Ticket number -->
+                                <td class="ps-3 align-middle">
+                                    <span class="ticket-number text-primary"
+                                          th:text="${ticket.ticketNumber}">TKT-2026-000001</span>
+                                </td>
+
+                                <!-- Title -->
+                                <td class="align-middle" th:text="${ticket.title}">Title</td>
+
+                                <!-- Status + progress bar -->
+                                <td class="align-middle" style="min-width:120px">
+                                    <span class="badge"
+                                          th:classappend="${ticket.status.name() == 'OPEN'        ? 'bg-warning text-dark' :
+                                                           ticket.status.name() == 'IN_PROGRESS'  ? 'bg-primary'          :
+                                                           ticket.status.name() == 'RESOLVED'     ? 'bg-success'          :
+                                                           ticket.status.name() == 'REJECTED'     ? 'bg-danger'           :
+                                                           ticket.status.name() == 'CLOSED'       ? 'bg-secondary'        :
+                                                           'bg-info'}"
+                                          th:text="${ticket.status}">STATUS</span>
+
+                                    <!-- Progress bar — width set via th:attrappend, no nested ${} -->
+                                    <div class="progress mt-1">
+                                        <div class="progress-bar"
+                                             th:classappend="${ticket.status.name() == 'OPEN'        ? 'bg-warning' :
+                                                               ticket.status.name() == 'IN_PROGRESS'  ? 'bg-primary' :
+                                                               ticket.status.name() == 'RESOLVED'     ? 'bg-success' :
+                                                               ticket.status.name() == 'REJECTED'     ? 'bg-danger'  :
+                                                               'bg-secondary'}"
+                                             th:attrappend="style=${'width:' +
+                                                (ticket.status.name() == 'OPEN'        ? '15'  :
+                                                 ticket.status.name() == 'IN_PROGRESS' ? '50'  :
+                                                 ticket.status.name() == 'RESOLVED'    ? '100' :
+                                                 ticket.status.name() == 'CLOSED'      ? '100' :
+                                                 ticket.status.name() == 'REJECTED'    ? '100' : '0') + '%'}">
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Priority -->
+                                <td class="align-middle">
+                                    <span class="badge priority-badge"
+                                          th:classappend="${ticket.priority != null and ticket.priority.name() == 'CRITICAL' ? 'bg-danger'   :
+                                                           ticket.priority != null and ticket.priority.name() == 'HIGH'     ? 'bg-warning text-dark' :
+                                                           ticket.priority != null and ticket.priority.name() == 'MEDIUM'   ? 'bg-info text-dark'    :
+                                                           'bg-light text-dark'}"
+                                          th:text="${ticket.priority != null ? ticket.priority : '--'}">
+                                    </span>
+                                </td>
+
+                                <!-- Created -->
+                                <td class="align-middle text-muted small"
+                                    th:text="${ticket.createdAtStr != null ? ticket.createdAtStr : '--'}">
+                                </td>
+
+                                <!-- Updated -->
+                                <td class="align-middle text-muted small"
+                                    th:text="${ticket.updatedAtStr != null ? ticket.updatedAtStr : '--'}">
+                                </td>
+
+                                <!-- Action -->
+                                <td class="pe-3 align-middle">
+                                    <a th:href="@{/user/ticket/{id}(id=${ticket.id})}"
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye me-1"></i>View
+                                    </a>
+                                </td>
+
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="card-footer bg-white" th:if="${tickets != null and tickets.totalPages > 1}">
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0 justify-content-center">
+                            <li class="page-item" th:classappend="${tickets.first ? 'disabled' : ''}">
+                                <a class="page-link"
+                                   th:href="@{/user/my-tickets(page=${tickets.number - 1}, size=${tickets.size})}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item"
+                                th:each="i : ${#numbers.sequence(0, tickets.totalPages - 1)}"
+                                th:classappend="${i == tickets.number ? 'active' : ''}">
+                                <a class="page-link"
+                                   th:href="@{/user/my-tickets(page=${i}, size=${tickets.size})}"
+                                   th:text="${i + 1}">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${tickets.last ? 'disabled' : ''}">
+                                <a class="page-link"
+                                   th:href="@{/user/my-tickets(page=${tickets.number + 1}, size=${tickets.size})}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>
