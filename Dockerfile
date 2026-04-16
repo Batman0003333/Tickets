@@ -8,7 +8,7 @@ WORKDIR /app
 COPY demo/pom.xml .
 COPY demo/src ./src
 
-RUN mvn clean package -DskipTests
+RUN mvn clean package -Dmaven.test.skip=true
 
 # ==========================================
 # Stage 2: Run the application (Deploy)
